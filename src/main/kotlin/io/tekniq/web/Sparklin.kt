@@ -46,7 +46,7 @@ class Sparklin(config: SparklinConfig = SparklinConfig(), routes: SparklinRoute.
     fun stop() = service.stop()
 }
 
-private class DefaultRoute(val service: Service, val authorizationManager: Interface?, val defaultResponseTransformer: ResponseTransformer) : SparklinRoute {
+private class DefaultRoute(val service: Service, val authorizationManager: AuthorizationManager?, val defaultResponseTransformer: ResponseTransformer) : SparklinRoute {
     override fun before(path: String, acceptType: String, filter: SparklinValidation.(Request, Response) -> Unit) {
         val innerFilter: Filter = Filter { req, res -> filter.invoke(WebValidation(req, authorizationManager), req, res) }
         service.before(path, acceptType, innerFilter)
@@ -114,7 +114,7 @@ private class DefaultRoute(val service: Service, val authorizationManager: Inter
     }
 }
 
-private class WebValidation(private val req: Request, private val authorizationManager: Interface?) : SparklinValidation(req.jsonAs<Any>()) {
+private class WebValidation(private val req: Request, private val authorizationManager: AuthorizationManager?) : SparklinValidation(req.jsonAs<Any>()) {
     private val body: Map<*, *>?
 
     init {

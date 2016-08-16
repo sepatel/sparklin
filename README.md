@@ -1,5 +1,5 @@
 # sparklin
-A Restful HTTP Framework built on top of Spark making it as easy to use as NodeJS's Express or Ruby's Sinatra
+A Kotlin HTTP Framework built on top of Spark with a DSL as easy to use as NodeJS's Express or Ruby's Sinatra.
 
 # Example
 ```kotlin
@@ -17,7 +17,7 @@ fun main(args: Array<String>) {
 
     Sparklin(SparklinConfig(authorizationManager = OptionalAuthorizationManager)) {
         before { req, res -> res.type("application/json") }
-        before("/silly") { req, res ->
+        before("/noauth") { req, res ->
             res.type("application/override")
             res.header("Purple", "fiddlestix")
         }

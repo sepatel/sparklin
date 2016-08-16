@@ -8,7 +8,7 @@ import kotlin.reflect.KClass
 
 class NotAuthorizedException(rejections: Collection<Rejection>) : ValidationException(rejections)
 
-interface Interface {
+interface AuthorizationManager {
     /**
      * Must return an empty list if no access is to be granted. Best practice says to return AUTHENTICATED if the user
      * is authenticated and to return ANONYMOUS if the user is not authenticated.
@@ -44,7 +44,7 @@ inline fun <reified T : Any> Request.jsonAs(): T? = jsonAs(T::class)
 
 data class SparklinConfig(
         val ip: String = "0.0.0.0", val port: Int = 4567,
-        val authorizationManager: Interface? = null,
+        val authorizationManager: AuthorizationManager? = null,
         val responseTransformer: ResponseTransformer = JsonResponseTransformer,
         val webSocketTimeout: Int? = null,
         val maxThreads: Int = 10, val minThreads: Int = -1, val idleTimeoutMillis: Int = -1,
