@@ -126,25 +126,19 @@ private class WebValidation(private val req: Request, private val authorizationM
         }
     }
 
-    override fun hasAny(vararg authz: String): SparklinValidation {
+    override fun authz(all: Boolean, vararg authz: String): SparklinValidation {
         val userAuthzList = authorizationManager?.getAuthz(req) ?: emptyList()
         authz.forEach {
-            if (userAuthzList.contains(it)) {
+            val contains = userAuthzList.contains(it)
+            if (all && !contains) {
+                throw NotAuthorizedException(mutableListOf(Rejection("unauthorized.all", it)))
+            } else if (!all && contains) {
                 return this
             }
         }
+
         val rejections = mutableListOf<Rejection>()
         authz.forEach { rejections.add(Rejection("unauthorized", it)) }
-        throw NotAuthorizedException(rejections)
-    }
-
-    override fun hasAll(vararg authz: String): SparklinValidation {
-        val userAuthzList = authorizationManager?.getAuthz(req) ?: emptyList()
-        if (userAuthzList.containsAll(authz.asList())) {
-            return this
-        }
-        val rejections = mutableListOf<Rejection>()
-        authz.asList().minus(userAuthzList).forEach { rejections.add(Rejection("unauthorized.all", it)) }
         throw NotAuthorizedException(rejections)
     }
 }

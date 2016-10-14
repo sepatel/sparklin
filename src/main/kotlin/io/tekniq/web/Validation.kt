@@ -7,6 +7,40 @@ open class ValidationException(val rejections: Collection<Rejection>) : Exceptio
 
 open class Validation(val src: Any?, val path: String = "") {
     val rejections = mutableListOf<Rejection>()
+    var tested = 0
+    var passed = 0
+
+    fun and(check: Validation.() -> Unit): Validation {
+        val validation = Validation(src)
+        check(validation)
+
+        if (validation.rejections.size > 0) {
+            rejections.add(Rejection(validation.rejections.joinToString {
+                if (it.field != null) {
+                    return@joinToString "${it.field}.${it.code}"
+                }
+
+                it.code
+            }, "\$and", path))
+        }
+        return this
+    }
+
+    fun or(check: Validation.() -> Unit): Validation {
+        val validation = Validation(src)
+        check(validation)
+
+        if (validation.passed == 0) {
+            rejections.add(Rejection(validation.rejections.joinToString {
+                if (it.field != null) {
+                    return@joinToString "${it.field}.${it.code}"
+                }
+
+                it.code
+            }, "\$or", path))
+        }
+        return this
+    }
 
     fun merge(vararg validations: Validation): Validation {
         validations.forEach { rejections.addAll(it.rejections) }
@@ -69,6 +103,24 @@ open class Validation(val src: Any?, val path: String = "") {
         return this
     }
 
+    open protected fun test(field: String?, code: String, check: (Any?) -> Boolean): Validation {
+        if (src == null) {
+            rejections.add(Rejection(code, fieldPath(field)))
+            return this
+        }
+
+        val test = getValue(src, field)
+        val validationCheckResult = check(test)
+        tested++
+        if (validationCheckResult) {
+            passed++
+        } else {
+            rejections.add(Rejection(code, fieldPath(field)))
+        }
+
+        return this
+    }
+
     private fun fieldPath(field: String?): String? {
         if (path.length > 0) {
             if (field == null) {
@@ -77,20 +129,6 @@ open class Validation(val src: Any?, val path: String = "") {
             return "$path.$field"
         }
         return field
-    }
-
-    private fun test(field: String?, code: String, check: (Any?) -> Boolean): Validation {
-        if (src == null) {
-            rejections.add(Rejection(code, fieldPath(field)))
-            return this
-        }
-
-        var test = getValue(src, field)
-        if (!check(test)) {
-            rejections.add(Rejection(code, fieldPath(field)))
-        }
-
-        return this
     }
 
     private fun getValue(src: Any, field: String?): Any? {
@@ -121,7 +159,6 @@ open class Validation(val src: Any?, val path: String = "") {
 }
 
 abstract class SparklinValidation(src: Any?, path: String = "") : Validation(src, path) {
-    abstract fun hasAny(vararg authz: String): SparklinValidation
-    abstract fun hasAll(vararg authz: String): SparklinValidation
+    abstract fun authz(all: Boolean = false, vararg authz: String): SparklinValidation
 }
 
