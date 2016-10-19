@@ -30,14 +30,22 @@ fun main(args: Array<String>) {
         get("/hello") { req, res -> bean }
 
         post("/hello") { req, res ->
-            hasAny("ANONYMOUS", "IAMME").required("name").date("ts").stopOnRejections()
+            authz("IAMME").required("name").date("ts").stopOnRejections()
             val play = req.jsonAs<TestBean>()
             play.age *= 2
             play
         }
 
+        put("/complexOrValidation") { req, res ->
+            authz("IAMME").or {
+              required("name")
+              required("age")
+            }
+            req.jsonAs<TestBean>()
+        }
+
         get("/noauth") { req, res ->
-            hasAll("NO SUCH PERM")
+            authz(all = true, "NO SUCH PERM", "IAMME")
         }
 
         get("/error") { req, res ->
