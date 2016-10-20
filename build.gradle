@@ -29,6 +29,11 @@ dependencies {
     testCompile 'junit:junit:4.12'
 }
 
+task javadocJar(type: Jar) {
+    classifier = 'javadoc'
+    from javadoc
+}
+
 task sourcesJar(type: Jar) {
     classifier = 'sources'
     from sourceSets.main.allSource
@@ -36,6 +41,7 @@ task sourcesJar(type: Jar) {
 
 artifacts {
     archives jar
+    archives javadocJar
     archives sourcesJar
 }
 
@@ -57,13 +63,28 @@ uploadArchives {
                 name 'sparklin'
                 packaging 'jar'
                 artifactId 'tekniq-sparklin'
-                description 'TODO: Description of sparklin'
+                description 'A Kotlin HTTP Framework built on top of Spark with a DSL as easy to use as NodeJS\'s Express or Ruby\'s Sinatra'
                 url 'https://github.com/sepatel/sparklin'
 
                 scm {
                     connection 'scm:git:git://github.com/sepatel/sparklin.git'
                     developerConnection 'scm:git:git://github.com/sepatel/sparklin'
                     url 'http://github.com/sepatel/sparklin'
+                }
+
+                licenses {
+                    license {
+                        name 'MIT License'
+                        url 'https://raw.githubusercontent.com/sepatel/sparklin/master/LICENSE.md'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id 'sepatel'
+                        name 'Sejal Patel'
+                        email 'sejal@tekniq.io'
+                    }
                 }
             }
         }
